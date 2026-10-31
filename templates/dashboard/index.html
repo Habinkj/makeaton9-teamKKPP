@@ -16,12 +16,14 @@
   </form>
 </div>
 
-<div class="stats stats-vertical lg:stats-horizontal shadow bg-base-100 w-full mb-6">
-  <div class="stat"><div class="stat-title">Active subscriptions</div><div class="stat-value">{{ kpis.active }}</div></div>
-  <div class="stat"><div class="stat-title">MRR</div><div class="stat-value text-primary">{{ kpis.mrr|rupees }}</div><div class="stat-desc">monthly recurring, before discount &amp; tax</div></div>
-  <div class="stat"><div class="stat-title">Collected</div><div class="stat-value text-success">{{ kpis.collected|rupees }}</div><div class="stat-desc">{{ d_from|date:"d M" }} – {{ d_to|date:"d M Y" }}</div></div>
-  <div class="stat"><div class="stat-title">Outstanding</div><div class="stat-value">{{ kpis.outstanding|rupees }}</div><div class="stat-desc">confirmed, unpaid balance</div></div>
-  <div class="stat"><div class="stat-title">Overdue</div><div class="stat-value text-error">{{ kpis.overdue_amount|rupees }}</div><div class="stat-desc">{{ kpis.overdue_count }} invoice{{ kpis.overdue_count|pluralize }}</div></div>
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+  {% with c="card bg-base-100 shadow" %}
+  <div class="{{ c }}"><div class="card-body p-4"><div class="text-sm opacity-70">Active subscriptions</div><div class="text-2xl font-bold">{{ kpis.active }}</div></div></div>
+  <div class="{{ c }}"><div class="card-body p-4"><div class="text-sm opacity-70">MRR</div><div class="text-2xl font-bold text-primary break-all">{{ kpis.mrr|rupees }}</div><div class="text-xs opacity-60">before discount &amp; tax</div></div></div>
+  <div class="{{ c }}"><div class="card-body p-4"><div class="text-sm opacity-70">Collected</div><div class="text-2xl font-bold text-success break-all">{{ kpis.collected|rupees }}</div><div class="text-xs opacity-60">{{ d_from|date:"d M" }} – {{ d_to|date:"d M Y" }}</div></div></div>
+  <div class="{{ c }}"><div class="card-body p-4"><div class="text-sm opacity-70">Outstanding</div><div class="text-2xl font-bold break-all">{{ kpis.outstanding|rupees }}</div><div class="text-xs opacity-60">confirmed, unpaid balance</div></div></div>
+  <div class="{{ c }}"><div class="card-body p-4"><div class="text-sm opacity-70">Overdue</div><div class="text-2xl font-bold text-error break-all">{{ kpis.overdue_amount|rupees }}</div><div class="text-xs opacity-60">{{ kpis.overdue_count }} invoice{{ kpis.overdue_count|pluralize }}</div></div></div>
+  {% endwith %}
 </div>
 
 <div class="grid lg:grid-cols-3 gap-4 mb-6">

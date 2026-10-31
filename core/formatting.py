@@ -3,15 +3,28 @@ as basis points; humans type rupees and percentages (both are x100)."""
 from decimal import ROUND_HALF_UP, Decimal
 
 
+def indian_group(n: int) -> str:
+    """1234567 -> '12,34,567' (lakh/crore grouping)."""
+    s = str(n)
+    if len(s) <= 3:
+        return s
+    head, tail = s[:-3], s[-3:]
+    pairs = []
+    while len(head) > 2:
+        pairs.insert(0, head[-2:])
+        head = head[:-2]
+    return ",".join([head] + pairs + [tail])
+
+
 def format_rupees(paise):
-    """Integer paise -> '₹1,234.56'. Display only; never used for arithmetic."""
+    """Integer paise -> '₹12,34,567.89'. Display only; never used for arithmetic."""
     try:
         paise = int(paise)
     except (TypeError, ValueError):
         return ""
     sign = "-" if paise < 0 else ""
     whole, p = divmod(abs(paise), 100)
-    return f"{sign}₹{whole:,}.{p:02d}"
+    return f"{sign}₹{indian_group(whole)}.{p:02d}"
 
 
 def format_bps(bps):
