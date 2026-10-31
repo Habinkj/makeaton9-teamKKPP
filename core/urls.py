@@ -7,12 +7,14 @@ from core import views_subscriptions as s
 from core import views_billing as b
 from core import views_dashboard as d
 from core import views_clock as k
+from core import views_health as h
 from core.forms import EmailAuthenticationForm
 
 urlpatterns = [
     path("", d.home, name="home"),
     path("dashboard/", d.dashboard, name="dashboard"),
     path("clock/", k.clock_control, name="clock_control"),
+    path("health/", h.health_check, name="health"),
     path("signup/", v.signup, name="signup"),
     path("login/", auth_views.LoginView.as_view(
         authentication_form=EmailAuthenticationForm,
