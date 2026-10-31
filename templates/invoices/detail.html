@@ -1,14 +1,68 @@
 {% extends "base.html" %}
 {% load brightloop %}
+{% block title %}{{ invoice.number }} · Brightloop{% endblock %}
 {% block content %}
-<div class="card bg-base-100 shadow"><div class="card-body">
-  <h1 class="card-title">{{ invoice.number }} <span class="badge">{{ invoice.get_status_display }}</span></h1>
-  <p>Customer: {{ invoice.customer }} · Period {{ invoice.period_start|date:"d M Y" }} – {{ invoice.period_end|date:"d M Y" }} · Due {{ invoice.due_date|date:"d M Y" }}</p>
-  <table class="table w-auto">
+<div class="flex flex-wrap justify-between items-start gap-3 mb-4">
+  <div>
+    <h1 class="text-2xl font-bold">{{ invoice.number }}
+      <span class="badge badge-lg">{{ invoice.get_status_display }}</span>
+      {% if overdue %}<span class="badge badge-lg badge-error">Overdue</span>{% endif %}
+    </h1>
+    <p class="opacity-70">{{ invoice.customer }} ·
+      <a class="link" href="{% url 'subscription_detail' invoice.subscription_id %}">{{ invoice.subscription }}</a> ·
+      period {{ invoice.period_start|date:"d M Y" }} – {{ invoice.period_end|date:"d M Y" }}</p>
+    <p class="text-sm">Issued {{ invoice.issue_date|date:"d M Y" }} · due {{ invoice.due_date|date:"d M Y" }}{% if invoice.sent_at %} · emailed {{ invoice.sent_at|date:"d M Y H:i" }}{% endif %}</p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    {% for action, label, css in actions %}
+      <form method="post" action="{% url 'invoice_action' invoice.pk action %}">{% csrf_token %}
+        <button class="btn btn-sm {{ css }}" type="submit">{{ label }}</button></form>
+    {% endfor %}
+    <a class="btn btn-sm btn-ghost" href="{% url 'invoice_print' invoice.pk %}" target="_blank">Print</a>
+  </div>
+</div>
+
+<div class="overflow-x-auto bg-base-100 shadow rounded-box mb-6">
+  <table class="table">
+    <thead><tr><th>Item</th><th class="text-right">Qty</th><th class="text-right">Unit price</th><th class="text-right">Discount</th><th class="text-right">Tax</th><th class="text-right">Amount</th></tr></thead>
+    <tbody>
+    {% for l in lines %}
+      <tr><td>{{ l.description }}</td><td class="text-right">{{ l.quantity }}</td>
+        <td class="text-right">{{ l.unit_price|rupees }}</td>
+        <td class="text-right">{% if l.discount_amount %}-{{ l.discount_amount|rupees }}{% else %}—{% endif %}</td>
+        <td class="text-right">{{ l.tax_amount|rupees }} <span class="opacity-60">({{ l.tax_rate_bps|bps }})</span></td>
+        <td class="text-right">{{ l.line_total|rupees }}</td></tr>
+    {% empty %}<tr><td colspan="6" class="opacity-60">No lines.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="flex flex-wrap gap-6 mb-6">
+  <table class="table w-auto bg-base-100 shadow rounded-box">
     <tr><td>Subtotal</td><td class="text-right">{{ invoice.subtotal|rupees }}</td></tr>
-    <tr><td>Discount</td><td class="text-right">-{{ invoice.discount_total|rupees }}</td></tr>
+    <tr><td>Discount{% if invoice.discount_applied %} ({{ invoice.discount_applied }}){% endif %}</td><td class="text-right">-{{ invoice.discount_total|rupees }}</td></tr>
     <tr><td>Tax</td><td class="text-right">{{ invoice.tax_total|rupees }}</td></tr>
     <tr class="font-bold"><td>Total</td><td class="text-right">{{ invoice.total|rupees }}</td></tr>
+    <tr><td>Paid</td><td class="text-right">{{ paid|rupees }}</td></tr>
+    <tr class="font-bold"><td>Balance due</td><td class="text-right">{{ balance|rupees }}</td></tr>
   </table>
-</div></div>
+
+  <div class="card bg-base-100 shadow flex-1 min-w-64"><div class="card-body">
+    <h2 class="card-title text-base">Timeline</h2>
+    <ul class="space-y-1 text-sm">
+      {% for e in events %}
+        <li><span class="opacity-60">{{ e.created_at|date:"d M Y H:i" }}</span> ·
+          {% if e.from_status and e.from_status != e.to_status %}{{ e.from_status }} → {% endif %}<b>{{ e.to_status }}</b>
+          by {{ e.actor.email|default:"system" }}{% if e.note %} · {{ e.note }}{% endif %}</li>
+      {% empty %}<li class="opacity-60">No events.</li>{% endfor %}
+    </ul>
+  </div></div>
+</div>
+
+{% if trace %}
+<details class="collapse collapse-arrow bg-base-100 shadow">
+  <summary class="collapse-title font-medium">How this invoice was calculated</summary>
+  <div class="collapse-content"><pre class="text-xs overflow-x-auto">{{ trace }}</pre></div>
+</details>
+{% endif %}
 {% endblock %}

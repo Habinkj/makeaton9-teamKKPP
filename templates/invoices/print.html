@@ -1,0 +1,29 @@
+{% load brightloop %}<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>{{ invoice.number }}</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:800px;margin:2rem auto;color:#111}
+  table{width:100%;border-collapse:collapse;margin:1rem 0} th,td{padding:.4rem;border-bottom:1px solid #ddd;text-align:left}
+  .r{text-align:right} .tot td{font-weight:700} header{display:flex;justify-content:space-between}
+  @media print{.noprint{display:none}}
+</style></head>
+<body>
+<button class="noprint" onclick="window.print()">Print / Save as PDF</button>
+<header><div><h1>Brightloop Software</h1><p>billing@brightloop.local</p></div>
+  <div class="r"><h2>{{ invoice.number }}</h2><p>Status: {{ invoice.get_status_display }}</p>
+  <p>Issued {{ invoice.issue_date|date:"d M Y" }}<br>Due {{ invoice.due_date|date:"d M Y" }}</p></div></header>
+<p><b>Bill to:</b> {{ invoice.customer }}<br>Subscription {{ invoice.subscription }} · period {{ invoice.period_start|date:"d M Y" }} – {{ invoice.period_end|date:"d M Y" }}</p>
+<table>
+  <tr><th>Item</th><th class="r">Qty</th><th class="r">Unit price</th><th class="r">Discount</th><th class="r">Tax</th><th class="r">Amount</th></tr>
+  {% for l in lines %}<tr><td>{{ l.description }}</td><td class="r">{{ l.quantity }}</td><td class="r">{{ l.unit_price|rupees }}</td>
+    <td class="r">{% if l.discount_amount %}-{{ l.discount_amount|rupees }}{% else %}—{% endif %}</td>
+    <td class="r">{{ l.tax_amount|rupees }} ({{ l.tax_rate_bps|bps }})</td><td class="r">{{ l.line_total|rupees }}</td></tr>{% endfor %}
+</table>
+<table style="width:50%;margin-left:auto">
+  <tr><td>Subtotal</td><td class="r">{{ invoice.subtotal|rupees }}</td></tr>
+  <tr><td>Discount</td><td class="r">-{{ invoice.discount_total|rupees }}</td></tr>
+  <tr><td>Tax</td><td class="r">{{ invoice.tax_total|rupees }}</td></tr>
+  <tr class="tot"><td>Total</td><td class="r">{{ invoice.total|rupees }}</td></tr>
+  <tr><td>Paid</td><td class="r">{{ paid|rupees }}</td></tr>
+  <tr class="tot"><td>Balance due</td><td class="r">{{ balance|rupees }}</td></tr>
+</table>
+</body></html>

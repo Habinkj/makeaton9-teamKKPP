@@ -22,10 +22,12 @@
           <a href="{% url 'staff_list' %}" class="btn btn-ghost">Staff</a>
           <a href="{% url 'subscription_list' %}" class="btn btn-ghost">Subscriptions</a>
           <a href="{% url 'invoice_list' %}" class="btn btn-ghost">Invoices</a>
+          <a href="{% url 'billing_home' %}" class="btn btn-ghost">Billing</a>
         {% elif user_role == "staff" %}
           <a href="{% url 'catalog_list' key='products' %}" class="btn btn-ghost">Catalog</a>
           <a href="{% url 'subscription_list' %}" class="btn btn-ghost">Subscriptions</a>
           <a href="{% url 'invoice_list' %}" class="btn btn-ghost">Invoices</a>
+          <a href="{% url 'billing_home' %}" class="btn btn-ghost">Billing</a>
         {% else %}
           <a href="{% url 'subscription_list' %}" class="btn btn-ghost">My Subscriptions</a>
           <a href="{% url 'invoice_list' %}" class="btn btn-ghost">My Invoices</a>

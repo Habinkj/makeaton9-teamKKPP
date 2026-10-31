@@ -4,6 +4,7 @@ from django.urls import path
 from core import views_auth as v
 from core import views_catalog as c
 from core import views_subscriptions as s
+from core import views_billing as b
 from core.forms import EmailAuthenticationForm
 
 urlpatterns = [
@@ -43,5 +44,8 @@ urlpatterns = [
     path("subscriptions/<int:pk>/renew/", s.subscription_renew, name="subscription_renew"),
 
     path("invoices/", v.invoice_list, name="invoice_list"),
-    path("invoices/<int:pk>/", v.invoice_detail, name="invoice_detail"),
+    path("invoices/<int:pk>/", b.invoice_detail, name="invoice_detail"),
+    path("invoices/<int:pk>/print/", b.invoice_print, name="invoice_print"),
+    path("invoices/<int:pk>/<slug:action>/", b.invoice_action, name="invoice_action"),
+    path("billing/", b.billing_home, name="billing_home"),
 ]
