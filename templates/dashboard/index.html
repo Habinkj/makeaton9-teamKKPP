@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load brightloop %}
+{% block title %}Dashboard · Brightloop{% endblock %}
+{% block content %}
+<div class="flex flex-wrap justify-between items-end gap-3 mb-4">
+  <div>
+    <h1 class="text-2xl font-bold">{% if internal %}Dashboard{% else %}My account{% endif %}</h1>
+    <p class="opacity-70">As of {{ today|date:"d M Y" }}</p>
+  </div>
+  <form method="get" class="flex gap-2 items-end">
+    <label class="form-control"><div class="label"><span class="label-text">Collected from</span></div>
+      <input type="date" name="from" value="{{ d_from|date:'Y-m-d' }}" class="input input-bordered input-sm"></label>
+    <label class="form-control"><div class="label"><span class="label-text">to</span></div>
+      <input type="date" name="to" value="{{ d_to|date:'Y-m-d' }}" class="input input-bordered input-sm"></label>
+    <button class="btn btn-sm" type="submit">Apply</button>
+  </form>
+</div>
+
+<div class="stats stats-vertical lg:stats-horizontal shadow bg-base-100 w-full mb-6">
+  <div class="stat"><div class="stat-title">Active subscriptions</div><div class="stat-value">{{ kpis.active }}</div></div>
+  <div class="stat"><div class="stat-title">MRR</div><div class="stat-value text-primary">{{ kpis.mrr|rupees }}</div><div class="stat-desc">monthly recurring, before discount &amp; tax</div></div>
+  <div class="stat"><div class="stat-title">Collected</div><div class="stat-value text-success">{{ kpis.collected|rupees }}</div><div class="stat-desc">{{ d_from|date:"d M" }} – {{ d_to|date:"d M Y" }}</div></div>
+  <div class="stat"><div class="stat-title">Outstanding</div><div class="stat-value">{{ kpis.outstanding|rupees }}</div><div class="stat-desc">confirmed, unpaid balance</div></div>
+  <div class="stat"><div class="stat-title">Overdue</div><div class="stat-value text-error">{{ kpis.overdue_amount|rupees }}</div><div class="stat-desc">{{ kpis.overdue_count }} invoice{{ kpis.overdue_count|pluralize }}</div></div>
+</div>
+
+<div class="grid lg:grid-cols-3 gap-4 mb-6">
+  <div class="card bg-base-100 shadow lg:col-span-2"><div class="card-body">
+    <h2 class="card-title text-base">Collected per month (₹)</h2>
+    <canvas id="chartMonths" height="110"></canvas>
+  </div></div>
+  <div class="card bg-base-100 shadow"><div class="card-body">
+    <h2 class="card-title text-base">Subscriptions by status</h2>
+    <canvas id="chartStatus" height="200"></canvas>
+  </div></div>
+</div>
+
+<div class="card bg-base-100 shadow"><div class="card-body p-0">
+  <div class="flex flex-wrap justify-between items-center gap-2 p-4">
+    <h2 class="card-title text-base">Overdue invoices</h2>
+    <form class="flex gap-2" method="get" action="{% url 'dashboard' %}">
+      <input name="q" value="{{ q }}" placeholder="Search invoice or customer" class="input input-bordered input-sm"
+             hx-get="{% url 'dashboard' %}" hx-trigger="keyup changed delay:300ms" hx-target="#overdue" hx-include="closest form">
+      <select name="min_days" class="select select-bordered select-sm"
+              hx-get="{% url 'dashboard' %}" hx-trigger="change" hx-target="#overdue" hx-include="closest form">
+        <option value="0" {% if min_days == 0 %}selected{% endif %}>Any age</option>
+        <option value="30" {% if min_days == 30 %}selected{% endif %}>30+ days</option>
+        <option value="60" {% if min_days == 60 %}selected{% endif %}>60+ days</option>
+        <option value="90" {% if min_days == 90 %}selected{% endif %}>90+ days</option>
+      </select>
+    </form>
+  </div>
+  <div id="overdue">{% include "dashboard/_overdue.html" %}</div>
+</div></div>
+
+<p class="text-xs opacity-60 mt-4 text-right">Dashboard figures computed in {{ elapsed_ms }} ms on the server.</p>
+
+{{ chart_months|json_script:"data-months" }}
+{{ chart_status|json_script:"data-status" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+  (function () {
+    if (typeof Chart === "undefined") return;        // offline: KPIs and table still work
+    const m = JSON.parse(document.getElementById("data-months").textContent);
+    const s = JSON.parse(document.getElementById("data-status").textContent);
+    new Chart(document.getElementById("chartMonths"), {
+      type: "bar", data: {labels: m.labels, datasets: [{label: "Collected", data: m.values}]},
+      options: {plugins: {legend: {display: false}}, scales: {y: {beginAtZero: true}}}});
+    new Chart(document.getElementById("chartStatus"), {
+      type: "doughnut", data: {labels: s.labels, datasets: [{data: s.values}]},
+      options: {plugins: {legend: {position: "bottom"}}}});
+  })();
+</script>
+{% endblock %}

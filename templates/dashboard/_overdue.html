@@ -1,0 +1,13 @@
+{% load brightloop %}
+<table class="table">
+  <thead><tr><th>Invoice</th><th>Customer</th><th>Due</th><th class="text-right">Days overdue</th><th class="text-right">Balance</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr><td><a class="link" href="{% url 'invoice_detail' r.inv.pk %}">{{ r.inv.number }}</a></td>
+      <td>{{ r.inv.customer }}</td><td>{{ r.inv.due_date|date:"d M Y" }}</td>
+      <td class="text-right"><span class="badge {% if r.days > 60 %}badge-error{% elif r.days > 30 %}badge-warning{% else %}badge-ghost{% endif %}">{{ r.days }}</span></td>
+      <td class="text-right">{{ r.inv.balance|rupees }}</td></tr>
+  {% empty %}<tr><td colspan="5" class="opacity-60">Nothing overdue. 🎉</td></tr>{% endfor %}
+  </tbody>
+</table>
+<p class="text-sm opacity-60 px-4 pb-3">{% if overdue_count > rows|length %}Showing the {{ rows|length }} oldest of {{ overdue_count }} overdue invoices. <a class="link" href="{% url 'invoice_list' %}?status=overdue">See all</a>{% else %}{{ overdue_count }} overdue invoice{{ overdue_count|pluralize }}.{% endif %}</p>

@@ -5,10 +5,12 @@ from core import views_auth as v
 from core import views_catalog as c
 from core import views_subscriptions as s
 from core import views_billing as b
+from core import views_dashboard as d
 from core.forms import EmailAuthenticationForm
 
 urlpatterns = [
-    path("", v.home, name="home"),
+    path("", d.home, name="home"),
+    path("dashboard/", d.dashboard, name="dashboard"),
     path("signup/", v.signup, name="signup"),
     path("login/", auth_views.LoginView.as_view(
         authentication_form=EmailAuthenticationForm,

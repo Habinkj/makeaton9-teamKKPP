@@ -32,7 +32,7 @@
           <a href="{% url 'subscription_list' %}" class="btn btn-ghost">My Subscriptions</a>
           <a href="{% url 'invoice_list' %}" class="btn btn-ghost">My Invoices</a>
         {% endif %}
-        <a href="#" class="btn btn-ghost">Dashboard</a>
+        <a href="{% url 'dashboard' %}" class="btn btn-ghost">Dashboard</a>
         <span class="badge badge-outline">{{ user_role }}</span>
         <form method="post" action="{% url 'logout' %}" class="inline">
           {% csrf_token %}
