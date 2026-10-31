@@ -1,0 +1,7 @@
+Front-end libraries vendored so the app runs with no internet access.
+All are MIT-licensed.
+
+tailwind.js   Tailwind CSS Play CDN build (v3), from https://cdn.tailwindcss.com
+daisyui.css   daisyUI 4.12.10 full.min.css, from https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css
+htmx.js       htmx 1.9.12 htmx.min.js, from https://unpkg.com/htmx.org@1.9.12/dist/htmx.min.js
+chart.js      Chart.js 4.4.4 chart.umd.min.js, from https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js
