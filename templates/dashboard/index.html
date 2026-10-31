@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load brightloop %}
+{% load brightloop static %}
 {% block title %}Dashboard · Brightloop{% endblock %}
 {% block content %}
 <div class="flex flex-wrap justify-between items-end gap-3 mb-4">
@@ -81,7 +81,7 @@
 
 {{ chart_months|json_script:"data-months" }}
 {{ chart_status|json_script:"data-status" }}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="{% static 'vendor/chart.js' %}"></script>
 <script>
   (function () {
     if (typeof Chart === "undefined") return;        // offline: KPIs and table still work

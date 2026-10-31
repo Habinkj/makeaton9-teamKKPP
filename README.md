@@ -101,6 +101,7 @@ docker compose run --rm web python manage.py test core
 - An invoice becomes Paid when payments reach its total. Overpayments, zero amounts and future-dated payments are refused.
 - Only unpaid draft or confirmed invoices can be cancelled; cancelling releases the discount use. Cancelled invoices are not regenerated automatically.
 - Catch-up billing creates at most 60 periods per subscription per run.
+- Product-level discounts are found and applied automatically by the billing run. A subscription-level discount is attached to the subscription by staff at quote time; once attached, it applies on every invoice until it expires or runs out.
 
 ## Performance
 
@@ -122,12 +123,20 @@ Measured on 10,000 subscriptions and about 44,500 invoices (seed 42):
 
 Worst p95: 173 ms against a 2,000 ms budget.
 
-Limits of this measurement: it is server time only (Django, SQL, templates), run in-process. It excludes network latency, browser rendering and CDN downloads. Billing preview is fast here because nothing was due at measurement time. The invoices list is slowest because it sums payments per invoice; at much larger scale we would store a running paid amount on the invoice, updated in the same transaction as each payment.
+Limits of this measurement: it is server time only (Django, SQL, templates), run in-process. It excludes network latency, browser rendering and static-file downloads. Billing preview is fast here because nothing was due at measurement time. The invoices list is slowest because it sums payments per invoice; at much larger scale we would store a running paid amount on the invoice, updated in the same transaction as each payment.
+
+## Offline and caching
+
+- **Works with no internet.** Tailwind, daisyUI, HTMX and Chart.js are vendored in `static/vendor/` (versions in `VERSIONS.txt`) and served by Django. Email goes to a local Mailpit inbox. A test (`core/tests/test_offline.py`) fails if any page references an external host.
+- **Browser caching.** Static files are served with `Last-Modified`, so browsers revalidate and receive `304 Not Modified` instead of downloading the libraries again.
+- **Offline planning.** Billing is planned before it is executed: `/billing/` preview and `run_billing --dry-run` compute what is due, including catch-up periods and exceptions, without writing anything. Each subscription stores its next invoice date, so finding what is due is one indexed query (`sub_due_idx`), and the run is idempotent, so a planned run can be repeated safely.
+- **What we deliberately do not cache.** Dashboard and invoice figures are computed live. They are fast enough (see Performance), and a cache could show a stale total right after a payment or a simulated-clock change, which is worse than a slower page on a finance screen. If load required it, the next step would be a short-lived cache keyed on a version number that every payment and invoice write increments.
 
 ## Known limitations
 
-- Tailwind, HTMX and Chart.js load from CDNs, so the interface needs internet access the first time. Data and logic run locally.
+- Email is delivered to a local Mailpit inbox, not a real mail server.
 - The `ollama` service in `docker-compose.yml` is for a planned "Ask Finance" feature that was not built. It sits behind a Compose profile, so it doesn't start unless you run `docker compose --profile ai up -d`.
+- No payment gateway: payments are recorded by staff.
 
 ## Logging and operations
 
@@ -136,7 +145,6 @@ Limits of this measurement: it is server time only (Django, SQL, templates), run
 - Django logs one line per event to stdout. SQL logging is kept at WARNING so customer data doesn't end up in logs.
 - No remote log driver (fluentd, syslog, gelf) on purpose. In their default blocking mode a slow log server stalls the app, and fluentd can stop a container from starting. If we add central logging, we will use `mode: non-blocking` and accept dropped log lines rather than a frozen billing run.
 - The web service waits for a Postgres health check before starting, so a fresh `docker compose up` doesn't race the database.
-- No payment gateway: payments are recorded by staff.
 
 ## Project layout
 
