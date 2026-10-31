@@ -130,3 +130,24 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+# Logging: one line per event to stdout, which Docker collects (rotated, see docker-compose.yml).
+# Single-line format keeps each event as one log entry. Never log reset links or passwords.
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'line': {'format': '%(asctime)s %(levelname)s %(name)s %(message)s'},
+    },
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'line'},
+    },
+    'root': {'handlers': ['console'], 'level': 'INFO'},
+    'loggers': {
+        'django.db.backends': {'level': 'WARNING'},   # never dump SQL with customer data
+        'django.request': {'level': 'ERROR'},         # expected 403/404s are not incidents; 500s still log
+    },
+}

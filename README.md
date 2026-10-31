@@ -127,7 +127,15 @@ Limits of this measurement: it is server time only (Django, SQL, templates), run
 ## Known limitations
 
 - Tailwind, HTMX and Chart.js load from CDNs, so the interface needs internet access the first time. Data and logic run locally.
-- The `ollama` service in `docker-compose.yml` is for a planned "Ask Finance" feature that was not built. It is not needed to run the app.
+- The `ollama` service in `docker-compose.yml` is for a planned "Ask Finance" feature that was not built. It sits behind a Compose profile, so it doesn't start unless you run `docker compose --profile ai up -d`.
+
+## Logging and operations
+
+- Every container uses Docker's `json-file` driver capped at 3 files of 10 MB. The default driver never rotates, so a long billing run could otherwise fill the disk and stop Postgres.
+- `PYTHONUNBUFFERED=1` makes Python write logs immediately, so a crash doesn't lose its last lines.
+- Django logs one line per event to stdout. SQL logging is kept at WARNING so customer data doesn't end up in logs.
+- No remote log driver (fluentd, syslog, gelf) on purpose. In their default blocking mode a slow log server stalls the app, and fluentd can stop a container from starting. If we add central logging, we will use `mode: non-blocking` and accept dropped log lines rather than a frozen billing run.
+- The web service waits for a Postgres health check before starting, so a fresh `docker compose up` doesn't race the database.
 - No payment gateway: payments are recorded by staff.
 
 ## Project layout

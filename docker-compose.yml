@@ -1,3 +1,11 @@
+# Every container uses json-file with rotation. Docker's default json-file driver never
+# rotates, so a long billing run could fill the disk and take Postgres down with it.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   web:
     build: .
@@ -7,10 +15,14 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
-      - mailpit
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
     environment:
       - DATABASE_URL=postgres://brightloop:brightloop@db:5432/brightloop
+      - PYTHONUNBUFFERED=1   # write logs immediately, so a crash doesn't lose the last lines
+    logging: *default-logging
 
   db:
     image: postgres:16
@@ -22,19 +34,30 @@ services:
       - pg_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brightloop -d brightloop"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    logging: *default-logging
 
   mailpit:
     image: axllent/mailpit
     ports:
       - "8025:8025"
       - "1025:1025"
+    logging: *default-logging
 
+  # Planned "Ask Finance" feature, not built. Not started by default:
+  #   docker compose --profile ai up -d
   ollama:
     image: ollama/ollama
+    profiles: ["ai"]
     volumes:
       - ollama_data:/root/.ollama
     ports:
       - "11434:11434"
+    logging: *default-logging
 
 volumes:
   pg_data:
