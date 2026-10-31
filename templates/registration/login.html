@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Log in · Brightloop{% endblock %}
+{% block content %}
+<div class="card bg-base-100 shadow max-w-md mx-auto"><div class="card-body">
+  <h1 class="card-title">Log in</h1>
+  <form method="post">{% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="btn btn-primary w-full" type="submit">Log in</button>
+  </form>
+  <div class="flex justify-between text-sm mt-2">
+    <a class="link" href="{% url 'password_reset' %}">Forgot password?</a>
+    <a class="link" href="{% url 'signup' %}">Create an account</a>
+  </div>
+</div></div>
+{% endblock %}

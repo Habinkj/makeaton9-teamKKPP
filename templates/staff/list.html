@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+  <h1 class="text-2xl font-bold">Staff</h1>
+  <a class="btn btn-primary" href="{% url 'staff_create' %}">Add staff member</a>
+</div>
+<div class="overflow-x-auto bg-base-100 shadow rounded-box">
+  <table class="table">
+    <thead><tr><th>Name</th><th>Email</th><th>Joined</th></tr></thead>
+    <tbody>
+    {% for s in staff %}<tr><td>{{ s.first_name }}</td><td>{{ s.email }}</td><td>{{ s.date_joined|date:"d M Y" }}</td></tr>
+    {% empty %}<tr><td colspan="3" class="opacity-60">No staff yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

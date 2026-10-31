@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load brightloop %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">{% if user_role == "customer" %}My invoices{% else %}Invoices{% endif %}</h1>
+<div class="overflow-x-auto bg-base-100 shadow rounded-box">
+  <table class="table">
+    <thead><tr><th>Number</th><th>Customer</th><th>Status</th><th>Due</th><th class="text-right">Total</th></tr></thead>
+    <tbody>
+    {% for inv in invoices %}
+      <tr><td><a class="link" href="{% url 'invoice_detail' inv.pk %}">{{ inv.number }}</a></td>
+          <td>{{ inv.customer }}</td><td>{{ inv.get_status_display }}</td>
+          <td>{{ inv.due_date|date:"d M Y" }}</td><td class="text-right">{{ inv.total|rupees }}</td></tr>
+    {% empty %}<tr><td colspan="5" class="opacity-60">No invoices yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Sign up · Brightloop{% endblock %}
+{% block content %}
+<div class="card bg-base-100 shadow max-w-md mx-auto"><div class="card-body">
+  <h1 class="card-title">Create your account</h1>
+  <p class="text-sm opacity-70">Password: more than 8 characters, with an uppercase letter, a lowercase letter and a special character.</p>
+  <form method="post">{% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <button class="btn btn-primary w-full" type="submit">Sign up</button>
+  </form>
+  <a class="link text-sm mt-2" href="{% url 'login' %}">Already have an account? Log in</a>
+</div></div>
+{% endblock %}

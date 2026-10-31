@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load brightloop %}
+{% block content %}
+<div class="card bg-base-100 shadow"><div class="card-body">
+  <h1 class="card-title">{{ invoice.number }} <span class="badge">{{ invoice.get_status_display }}</span></h1>
+  <p>Customer: {{ invoice.customer }} · Period {{ invoice.period_start|date:"d M Y" }} – {{ invoice.period_end|date:"d M Y" }} · Due {{ invoice.due_date|date:"d M Y" }}</p>
+  <table class="table w-auto">
+    <tr><td>Subtotal</td><td class="text-right">{{ invoice.subtotal|rupees }}</td></tr>
+    <tr><td>Discount</td><td class="text-right">-{{ invoice.discount_total|rupees }}</td></tr>
+    <tr><td>Tax</td><td class="text-right">{{ invoice.tax_total|rupees }}</td></tr>
+    <tr class="font-bold"><td>Total</td><td class="text-right">{{ invoice.total|rupees }}</td></tr>
+  </table>
+</div></div>
+{% endblock %}

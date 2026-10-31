@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="corporate">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Brightloop{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+</head>
+<body class="min-h-screen bg-base-200">
+  <div class="navbar bg-base-100 shadow">
+    <div class="flex-1"><a href="{% url 'home' %}" class="text-xl font-bold px-4">Brightloop</a></div>
+    <div class="flex-none gap-2">
+      {% if user.is_authenticated %}
+        {% if user_role == "admin" %}
+          <a href="#" class="btn btn-ghost">Products</a>
+          <a href="#" class="btn btn-ghost">Discounts</a>
+          <a href="{% url 'staff_list' %}" class="btn btn-ghost">Staff</a>
+          <a href="#" class="btn btn-ghost">Subscriptions</a>
+          <a href="{% url 'invoice_list' %}" class="btn btn-ghost">Invoices</a>
+        {% elif user_role == "staff" %}
+          <a href="#" class="btn btn-ghost">Subscriptions</a>
+          <a href="{% url 'invoice_list' %}" class="btn btn-ghost">Invoices</a>
+        {% else %}
+          <a href="#" class="btn btn-ghost">My Subscriptions</a>
+          <a href="{% url 'invoice_list' %}" class="btn btn-ghost">My Invoices</a>
+        {% endif %}
+        <a href="#" class="btn btn-ghost">Dashboard</a>
+        <span class="badge badge-outline">{{ user_role }}</span>
+        <form method="post" action="{% url 'logout' %}" class="inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-sm btn-outline">Log out</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn btn-ghost">Log in</a>
+        <a href="{% url 'signup' %}" class="btn btn-primary btn-sm">Sign up</a>
+      {% endif %}
+    </div>
+  </div>
+  <main class="p-6 max-w-5xl mx-auto">
+    {% if messages %}
+      {% for m in messages %}
+        <div class="alert {% if m.tags == 'success' %}alert-success{% elif m.tags == 'error' %}alert-error{% else %}alert-info{% endif %} mb-4">{{ m }}</div>
+      {% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

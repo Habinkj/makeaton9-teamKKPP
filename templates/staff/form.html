@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card bg-base-100 shadow max-w-md mx-auto"><div class="card-body">
+  <h1 class="card-title">Add staff member</h1>
+  <p class="text-sm opacity-70">Staff handle day-to-day work with limited access. Share the temporary password securely; they can change it with "Forgot password".</p>
+  <form method="post">{% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <button class="btn btn-primary w-full" type="submit">Create staff account</button>
+  </form>
+</div></div>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card bg-base-100 shadow max-w-md mx-auto"><div class="card-body">
+  <h1 class="card-title">403 · Not allowed</h1><p>Your role doesn't have access to this page.</p>
+  <a class="link" href="{% url 'home' %}">Go home</a>
+</div></div>
+{% endblock %}
