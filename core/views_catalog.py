@@ -4,9 +4,10 @@ from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
-from core.forms_catalog import DiscountForm, PlanForm, ProductForm, TaxRuleForm, VariantForm
+from core.forms_catalog import (DiscountForm, PlanForm, ProductForm, TaxRuleForm,
+                                TemplateForm, VariantForm)
 from core.formatting import format_bps, format_rupees
-from core.models import Discount, Plan, Product, ProductVariant, TaxRule
+from core.models import Discount, Plan, Product, ProductVariant, QuotationTemplate, TaxRule
 from core.roles import ADMIN, STAFF, role_required
 
 CONFIG = {
@@ -41,6 +42,16 @@ CONFIG = {
             ("Min qty", "min_quantity", "text"),
             ("From", "available_from", "date"),
             ("Until", "available_until", "date"),
+        ],
+    },
+    "templates": {
+        "title": "Quote templates", "model": QuotationTemplate, "form": TemplateForm,
+        "order": ("name",), "related": ("plan",), "prefetch": ("lines",),
+        "columns": [
+            ("Name", "name", "text"),
+            ("Plan", "plan", "text"),
+            ("Valid for (days)", "validity_days", "text"),
+            ("Lines", lambda o: len(o.lines.all()), "text"),
         ],
     },
     "taxes": {

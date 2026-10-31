@@ -12,7 +12,7 @@
     <tbody>
     {% for row in rows %}
       <tr>{% for cell in row.cells %}<td>{{ cell }}</td>{% endfor %}
-        <td class="text-right">{% if can_edit %}<a class="link" href="{% url 'catalog_edit' key=current pk=row.pk %}">Edit</a>{% endif %}</td></tr>
+        <td class="text-right">{% if can_edit %}<a class="link" href="{% url 'catalog_edit' key=current pk=row.pk %}">Edit</a>{% if current == "templates" %} · <a class="link" href="{% url 'template_lines' pk=row.pk %}">Lines</a>{% endif %}{% endif %}</td></tr>
     {% empty %}
       <tr><td colspan="{{ headers|length|add:1 }}" class="opacity-60">Nothing here yet.</td></tr>
     {% endfor %}

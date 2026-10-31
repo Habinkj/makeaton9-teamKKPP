@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-1">{{ tpl.name }}</h1>
+<p class="opacity-70 mb-4">Plan {{ tpl.plan }} · valid for {{ tpl.validity_days }} days ·
+  <a class="link" href="{% url 'catalog_edit' key='templates' pk=tpl.pk %}">Edit details</a> ·
+  <a class="link" href="{% url 'catalog_list' key='templates' %}">All templates</a></p>
+<div class="overflow-x-auto bg-base-100 shadow rounded-box mb-6">
+  <table class="table">
+    <thead><tr><th>Product</th><th>Variant</th><th class="text-right">Qty</th><th></th></tr></thead>
+    <tbody>
+    {% for l in lines %}
+      <tr><td>{{ l.product.name }}</td>
+        <td>{% if l.variant %}{{ l.variant.attribute }}: {{ l.variant.value }}{% else %}—{% endif %}</td>
+        <td class="text-right">{{ l.quantity }}</td>
+        <td class="text-right"><form method="post" action="{% url 'template_line_delete' tpl.pk l.pk %}">{% csrf_token %}
+          <button class="btn btn-xs btn-ghost" type="submit">Remove</button></form></td></tr>
+    {% empty %}<tr><td colspan="4" class="opacity-60">No lines yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="card bg-base-100 shadow max-w-xl"><div class="card-body">
+  <h2 class="card-title text-base">Add line</h2>
+  <p class="text-sm opacity-70">Prices aren't stored here. They're copied from the catalog when a subscription is created from this template.</p>
+  <form method="post">{% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <button class="btn btn-sm btn-primary" type="submit">Add line</button>
+  </form>
+</div></div>
+{% endblock %}

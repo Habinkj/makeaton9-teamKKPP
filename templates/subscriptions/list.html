@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Subscriptions · Brightloop{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-4">
+  <h1 class="text-2xl font-bold">{% if user_role == "customer" %}My subscriptions{% else %}Subscriptions{% endif %}</h1>
+  {% if user_role != "customer" %}<a class="btn btn-primary" href="{% url 'subscription_create' %}">New subscription</a>{% endif %}
+</div>
+<form method="get" class="flex flex-wrap gap-2 mb-4">
+  <input name="q" value="{{ q }}" placeholder="Search number or customer" class="input input-bordered input-sm">
+  <select name="status" class="select select-bordered select-sm">
+    <option value="">All statuses</option>
+    {% for value, label in statuses %}<option value="{{ value }}" {% if value == status %}selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-sm" type="submit">Filter</button>
+</form>
+<div class="overflow-x-auto bg-base-100 shadow rounded-box">
+  <table class="table">
+    <thead><tr><th>Number</th><th>Customer</th><th>Plan</th><th>Start</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for sub in page %}
+      <tr>
+        <td><a class="link" href="{% url 'subscription_detail' sub.pk %}">{{ sub.number }}</a></td>
+        <td>{{ sub.customer }}</td><td>{{ sub.plan.name }}</td>
+        <td>{{ sub.start_date|date:"d M Y" }}</td>
+        <td><span class="badge {% for k, v in badge.items %}{% if k == sub.status %}{{ v }}{% endif %}{% endfor %}">{{ sub.get_status_display }}</span>{% if sub.is_paused %} <span class="badge badge-warning">Paused</span>{% endif %}</td>
+      </tr>
+    {% empty %}<tr><td colspan="5" class="opacity-60">No subscriptions found.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if page.paginator.num_pages > 1 %}
+<div class="join mt-4">
+  {% if page.has_previous %}<a class="join-item btn btn-sm" href="?{{ querystring }}&page={{ page.previous_page_number }}">«</a>{% endif %}
+  <span class="join-item btn btn-sm btn-disabled">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a class="join-item btn btn-sm" href="?{{ querystring }}&page={{ page.next_page_number }}">»</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

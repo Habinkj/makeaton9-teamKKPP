@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card bg-base-100 shadow max-w-xl mx-auto"><div class="card-body">
+  <h1 class="card-title">New subscription</h1>
+  <p class="text-sm opacity-70">Pick a quotation template to copy its lines, or leave it empty and add lines on the next page.</p>
+  <form method="post">{% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <div class="flex gap-2">
+      <button class="btn btn-primary" type="submit">Create draft</button>
+      <a class="btn btn-ghost" href="{% url 'subscription_list' %}">Cancel</a>
+    </div>
+  </form>
+</div></div>
+{% endblock %}

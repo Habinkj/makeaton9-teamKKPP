@@ -5,7 +5,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from core.formatting import from_minor, to_minor
-from core.models import Discount, Plan, Product, ProductVariant, TaxRule
+from core.models import Discount, Plan, Product, ProductVariant, QuotationTemplate, TaxRule
 
 
 def date_widget():
@@ -135,3 +135,9 @@ class DiscountForm(CatalogForm):
         if limit is not None and self.instance.pk and limit < self.instance.used_count:
             self.add_error("usage_limit", f"Already used {self.instance.used_count} times.")
         return data
+
+
+class TemplateForm(CatalogForm):
+    class Meta:
+        model = QuotationTemplate
+        fields = ["name", "plan", "validity_days"]

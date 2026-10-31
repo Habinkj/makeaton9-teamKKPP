@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load brightloop %}
+{% block title %}{{ sub.number }} · Brightloop{% endblock %}
+{% block content %}
+<div class="flex flex-wrap justify-between items-start gap-3 mb-4">
+  <div>
+    <h1 class="text-2xl font-bold">{{ sub.number }}
+      <span class="badge badge-lg {{ badge }}">{{ sub.get_status_display }}</span>
+      {% if sub.is_paused %}<span class="badge badge-lg badge-warning">Paused</span>{% endif %}
+    </h1>
+    <p class="opacity-70">{{ sub.customer }} · {{ sub.plan }} · starts {{ sub.start_date|date:"d M Y" }} · {{ sub.get_payment_terms_display }}</p>
+    {% if sub.status == "draft" or sub.status == "quotation" %}{% if sub.quotation_valid_until %}
+      <p class="text-sm">Quotation valid until {{ sub.quotation_valid_until|date:"d M Y" }}</p>{% endif %}{% endif %}
+    {% if sub.next_invoice_date %}<p class="text-sm">Next invoice: {{ sub.next_invoice_date|date:"d M Y" }}</p>{% endif %}
+  </div>
+  <div class="flex flex-wrap gap-2">
+    {% for to, label, css in actions %}
+      <form method="post" action="{% url 'subscription_transition' sub.pk %}">{% csrf_token %}
+        <input type="hidden" name="to" value="{{ to }}">
+        <button class="btn btn-sm {{ css }}" type="submit">{{ label }}</button>
+      </form>
+    {% endfor %}
+    {% if can_pause %}
+      <form method="post" action="{% url 'subscription_pause' sub.pk %}">{% csrf_token %}
+        <button class="btn btn-sm btn-outline" type="submit">{% if sub.is_paused %}Resume{% else %}Pause{% endif %}</button>
+      </form>
+    {% endif %}
+    {% if can_renew %}
+      <form method="post" action="{% url 'subscription_renew' sub.pk %}">{% csrf_token %}
+        <button class="btn btn-sm btn-primary" type="submit">Renew</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="overflow-x-auto bg-base-100 shadow rounded-box mb-6">
+  <table class="table">
+    <thead><tr><th>Product</th><th>Variant</th><th class="text-right">Qty</th><th class="text-right">Unit price</th><th class="text-right">Tax</th><th class="text-right">Amount (excl. tax)</th>{% if editable %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td>{{ r.line.product.name }}</td>
+        <td>{% if r.line.variant %}{{ r.line.variant.attribute }}: {{ r.line.variant.value }}{% else %}—{% endif %}</td>
+        <td class="text-right">{{ r.line.quantity }}</td>
+        <td class="text-right">{{ r.line.unit_price|rupees }}</td>
+        <td class="text-right">{{ r.line.tax_rate_bps|bps }}</td>
+        <td class="text-right">{{ r.amount|rupees }}</td>
+        {% if editable %}<td class="text-right">
+          <form method="post" action="{% url 'subscription_line_delete' sub.pk r.line.pk %}">{% csrf_token %}
+            <button class="btn btn-xs btn-ghost" type="submit">Remove</button></form></td>{% endif %}
+      </tr>
+    {% empty %}<tr><td colspan="7" class="opacity-60">No lines yet.</td></tr>{% endfor %}
+    </tbody>
+    <tfoot><tr><td colspan="5" class="text-right">Subtotal (before discount and tax)</td><td class="text-right font-bold">{{ subtotal|rupees }}</td>{% if editable %}<td></td>{% endif %}</tr></tfoot>
+  </table>
+</div>
+
+{% if editable %}
+<div class="card bg-base-100 shadow mb-6 max-w-xl"><div class="card-body">
+  <h2 class="card-title text-base">Add line</h2>
+  <form method="post" action="{% url 'subscription_line_add' sub.pk %}">{% csrf_token %}
+    {% include "includes/form_fields.html" with form=line_form %}
+    <button class="btn btn-sm btn-primary" type="submit">Add line</button>
+  </form>
+</div></div>
+{% endif %}
+
+<div class="card bg-base-100 shadow"><div class="card-body">
+  <h2 class="card-title text-base">Timeline</h2>
+  <ul class="space-y-1 text-sm">
+    {% for e in events %}
+      <li><span class="opacity-60">{{ e.created_at|date:"d M Y H:i" }}</span> ·
+        {% if e.from_status and e.from_status != e.to_status %}{{ e.from_status }} → {% endif %}<b>{{ e.to_status }}</b>
+        by {{ e.actor.email|default:"system" }}{% if e.note %} · {{ e.note }}{% endif %}</li>
+    {% empty %}<li class="opacity-60">No events.</li>{% endfor %}
+  </ul>
+</div></div>
+{% endblock %}
