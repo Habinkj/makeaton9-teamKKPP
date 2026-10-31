@@ -1,0 +1,41 @@
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - mailpit
+    environment:
+      - DATABASE_URL=postgres://brightloop:brightloop@db:5432/brightloop
+
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=brightloop
+      - POSTGRES_PASSWORD=brightloop
+      - POSTGRES_DB=brightloop
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  ollama:
+    image: ollama/ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+
+volumes:
+  pg_data:
+  ollama_data:
