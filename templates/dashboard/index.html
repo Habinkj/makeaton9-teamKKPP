@@ -16,6 +16,28 @@
   </form>
 </div>
 
+{% if user_role == "admin" %}
+<div class="card bg-base-100 shadow mb-4"><div class="card-body p-4 flex-row flex-wrap items-center gap-2">
+  <span class="font-semibold mr-2">Simulated date</span>
+  {% for n, label in clock_steps %}
+    <form method="post" action="{% url 'clock_control' %}">{% csrf_token %}
+      <input type="hidden" name="action" value="advance"><input type="hidden" name="days" value="{{ n }}">
+      <button class="btn btn-sm btn-outline" type="submit">{{ label }}</button>
+    </form>
+  {% endfor %}
+  <form method="post" action="{% url 'clock_control' %}" class="flex gap-2">{% csrf_token %}
+    <input type="hidden" name="action" value="set">
+    <input type="date" name="date" value="{{ today|date:'Y-m-d' }}" class="input input-bordered input-sm">
+    <button class="btn btn-sm" type="submit">Set</button>
+  </form>
+  {% if sim_days %}
+    <form method="post" action="{% url 'clock_control' %}">{% csrf_token %}
+      <input type="hidden" name="action" value="reset"><button class="btn btn-sm btn-ghost" type="submit">Reset</button>
+    </form>
+  {% endif %}
+</div></div>
+{% endif %}
+
 <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
   {% with c="card bg-base-100 shadow" %}
   <div class="{{ c }}"><div class="card-body p-4"><div class="text-sm opacity-70">Active subscriptions</div><div class="text-2xl font-bold">{{ kpis.active }}</div></div></div>

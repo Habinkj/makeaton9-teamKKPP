@@ -399,3 +399,12 @@ class Event(models.Model):
                 name="event_has_target",
             ),
         ]
+
+
+class Setting(models.Model):
+    """Tiny key/value store. Used for the simulated-clock offset."""
+    key = models.CharField(max_length=50, unique=True)
+    value = models.CharField(max_length=200)
+
+    def __str__(self):
+        return f"{self.key}={self.value}"

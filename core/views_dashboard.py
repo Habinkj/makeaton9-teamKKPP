@@ -115,5 +115,6 @@ def dashboard(request):
         "kpis": kpis, "today": today, "d_from": d_from, "d_to": d_to, "internal": internal,
         "rows": rows, "overdue_count": overdue_count, "limit": OVERDUE_LIMIT, "q": q, "min_days": min_days,
         "chart_months": chart_months, "chart_status": chart_status,
+        "clock_steps": [(1, "+1 day"), (7, "+7 days"), (30, "+30 days")],
         "elapsed_ms": round((time.perf_counter() - t0) * 1000),
     })

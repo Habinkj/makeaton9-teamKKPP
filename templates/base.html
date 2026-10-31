@@ -44,6 +44,17 @@
       {% endif %}
     </div>
   </div>
+  {% if sim_days %}
+  <div class="bg-warning text-warning-content text-sm px-4 py-2 flex flex-wrap justify-center items-center gap-3">
+    <span>⏩ Simulated date: <b>{{ sim_today|date:"d M Y" }}</b> (+{{ sim_days }} day{{ sim_days|pluralize }}). Due dates, overdue and billing use this date.</span>
+    {% if user_role == "admin" %}
+      <form method="post" action="{% url 'clock_control' %}">{% csrf_token %}
+        <input type="hidden" name="action" value="reset"><input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="btn btn-xs" type="submit">Back to real date</button>
+      </form>
+    {% endif %}
+  </div>
+  {% endif %}
   <main class="p-6 max-w-5xl mx-auto">
     {% if messages %}
       {% for m in messages %}
