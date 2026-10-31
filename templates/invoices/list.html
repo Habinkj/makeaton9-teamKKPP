@@ -2,7 +2,9 @@
 {% load brightloop %}
 {% block title %}Invoices · Brightloop{% endblock %}
 {% block content %}
-<h1 class="text-2xl font-bold mb-4">{% if user_role == "customer" %}My invoices{% else %}Invoices{% endif %}</h1>
+<h1 class="text-2xl font-bold mb-4">{% if user_role == "customer" %}My invoices{% else %}Invoices{% endif %}
+  <a href="{% url 'payment_list' %}" class="btn btn-sm btn-outline ml-2">Payments</a>
+</h1>
 <form method="get" class="flex flex-wrap gap-2 mb-4">
   <input name="q" value="{{ q }}" placeholder="Search number or customer" class="input input-bordered input-sm">
   <select name="status" class="select select-bordered select-sm">

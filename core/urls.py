@@ -8,6 +8,7 @@ from core import views_billing as b
 from core import views_dashboard as d
 from core import views_clock as k
 from core import views_health as h
+from core import views_payments as pay
 from core.forms import EmailAuthenticationForm
 
 urlpatterns = [
@@ -50,6 +51,7 @@ urlpatterns = [
     path("subscriptions/<int:pk>/renew/", s.subscription_renew, name="subscription_renew"),
 
     path("invoices/", b.invoice_list, name="invoice_list"),
+    path("payments/", pay.payment_list, name="payment_list"),
     path("invoices/<int:pk>/", b.invoice_detail, name="invoice_detail"),
     path("invoices/<int:pk>/print/", b.invoice_print, name="invoice_print"),
     path("invoices/<int:pk>/payment/", b.invoice_payment, name="invoice_payment"),
