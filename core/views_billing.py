@@ -7,7 +7,12 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
-from core import billing, clock
+from django.core.paginator import Paginator
+from django.db.models import F, Q, Sum
+from django.db.models.functions import Coalesce
+
+from core import billing, clock, payments
+from core.forms_payments import PaymentForm
 from core.roles import ADMIN, STAFF, role_required, scoped_invoices
 from core.statemachine import InvalidTransition
 
@@ -45,7 +50,11 @@ def invoice_detail(request, pk):
         if invoice.status in ("draft", "confirmed"):
             actions.append(("cancel", "Cancel", "btn-outline btn-error"))
     paid = billing.amount_paid(invoice)
+    balance = max(invoice.total - paid, 0)
+    can_pay = internal and invoice.status == "confirmed" and balance > 0
     return render(request, "invoices/detail.html", {
+        "payments": invoice.payments.select_related("recorded_by").order_by("-paid_on", "-id"),
+        "payment_form": PaymentForm() if can_pay else None,
         "invoice": invoice, "lines": invoice.lines.all().order_by("id"), "actions": actions,
         "paid": paid, "balance": max(invoice.total - paid, 0),
         "overdue": invoice.status == "confirmed" and invoice.due_date < clock.today(),
@@ -80,3 +89,48 @@ def invoice_print(request, pk):
     return render(request, "invoices/print.html", {
         "invoice": invoice, "lines": invoice.lines.all().order_by("id"),
         "paid": paid, "balance": max(invoice.total - paid, 0)})
+
+
+PAGE_SIZE = 25
+
+
+@login_required
+def invoice_list(request):
+    qs = (scoped_invoices(request.user)
+          .annotate(paid=Coalesce(Sum("payments__amount"), 0))
+          .annotate(balance=F("total") - F("paid")))
+    status = request.GET.get("status", "")
+    q = request.GET.get("q", "").strip()
+    if status == "overdue":
+        qs = qs.filter(status="confirmed", due_date__lt=clock.today())     # derived, not stored
+    elif status in ("draft", "confirmed", "paid", "cancelled"):
+        qs = qs.filter(status=status)
+    if q:
+        qs = qs.filter(Q(number__icontains=q) | Q(customer__name__icontains=q))
+    page = Paginator(qs.order_by("-issue_date", "-id"), PAGE_SIZE).get_page(request.GET.get("page"))
+    params = request.GET.copy()
+    params.pop("page", None)
+    return render(request, "invoices/list.html", {
+        "page": page, "status": status, "q": q, "today": clock.today(),
+        "querystring": params.urlencode()})
+
+
+@role_required(ADMIN, STAFF)
+@require_POST
+def invoice_payment(request, pk):
+    invoice = get_object_or_404(scoped_invoices(request.user), pk=pk)
+    form = PaymentForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "; ".join(f"{k}: {' '.join(v)}" for k, v in form.errors.items()))
+    else:
+        d = form.cleaned_data
+        try:
+            payments.record_payment(invoice, amount=form.amount_minor(), method=d["method"],
+                                    paid_on=d["paid_on"], note=d["note"], actor=request.user)
+        except billing.BillingError as e:
+            messages.error(request, str(e))
+        else:
+            invoice.refresh_from_db()
+            messages.success(request, "Invoice is now fully paid." if invoice.status == "paid"
+                             else "Partial payment recorded; invoice stays outstanding.")
+    return redirect("invoice_detail", pk=invoice.pk)

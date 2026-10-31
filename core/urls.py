@@ -43,9 +43,10 @@ urlpatterns = [
     path("subscriptions/<int:pk>/pause/", s.subscription_pause, name="subscription_pause"),
     path("subscriptions/<int:pk>/renew/", s.subscription_renew, name="subscription_renew"),
 
-    path("invoices/", v.invoice_list, name="invoice_list"),
+    path("invoices/", b.invoice_list, name="invoice_list"),
     path("invoices/<int:pk>/", b.invoice_detail, name="invoice_detail"),
     path("invoices/<int:pk>/print/", b.invoice_print, name="invoice_print"),
+    path("invoices/<int:pk>/payment/", b.invoice_payment, name="invoice_payment"),
     path("invoices/<int:pk>/<slug:action>/", b.invoice_action, name="invoice_action"),
     path("billing/", b.billing_home, name="billing_home"),
 ]

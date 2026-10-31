@@ -229,6 +229,8 @@ def amount_paid(invoice):
 
 def confirm_invoice(invoice, actor):
     apply_transition(invoice, "confirmed", actor=actor)
+    if invoice.total == 0:        # e.g. 100% discount: nothing to collect
+        apply_transition(invoice, "paid", actor=actor, note="Nothing to pay")
     return invoice
 
 

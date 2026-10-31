@@ -1,17 +1,39 @@
 {% extends "base.html" %}
 {% load brightloop %}
+{% block title %}Invoices · Brightloop{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold mb-4">{% if user_role == "customer" %}My invoices{% else %}Invoices{% endif %}</h1>
+<form method="get" class="flex flex-wrap gap-2 mb-4">
+  <input name="q" value="{{ q }}" placeholder="Search number or customer" class="input input-bordered input-sm">
+  <select name="status" class="select select-bordered select-sm">
+    <option value="">All</option>
+    <option value="draft" {% if status == "draft" %}selected{% endif %}>Draft</option>
+    <option value="confirmed" {% if status == "confirmed" %}selected{% endif %}>Confirmed</option>
+    <option value="overdue" {% if status == "overdue" %}selected{% endif %}>Overdue</option>
+    <option value="paid" {% if status == "paid" %}selected{% endif %}>Paid</option>
+    <option value="cancelled" {% if status == "cancelled" %}selected{% endif %}>Cancelled</option>
+  </select>
+  <button class="btn btn-sm" type="submit">Filter</button>
+</form>
 <div class="overflow-x-auto bg-base-100 shadow rounded-box">
   <table class="table">
-    <thead><tr><th>Number</th><th>Customer</th><th>Status</th><th>Due</th><th class="text-right">Total</th></tr></thead>
+    <thead><tr><th>Number</th><th>Customer</th><th>Status</th><th>Due</th><th class="text-right">Total</th><th class="text-right">Balance</th></tr></thead>
     <tbody>
-    {% for inv in invoices %}
+    {% for inv in page %}
       <tr><td><a class="link" href="{% url 'invoice_detail' inv.pk %}">{{ inv.number }}</a></td>
-          <td>{{ inv.customer }}</td><td>{{ inv.get_status_display }}</td>
-          <td>{{ inv.due_date|date:"d M Y" }}</td><td class="text-right">{{ inv.total|rupees }}</td></tr>
-    {% empty %}<tr><td colspan="5" class="opacity-60">No invoices yet.</td></tr>{% endfor %}
+          <td>{{ inv.customer }}</td>
+          <td>{{ inv.get_status_display }}{% if inv.status == "confirmed" and inv.due_date < today %} <span class="badge badge-error badge-sm">Overdue</span>{% endif %}</td>
+          <td>{{ inv.due_date|date:"d M Y" }}</td><td class="text-right">{{ inv.total|rupees }}</td>
+          <td class="text-right">{% if inv.status == "confirmed" or inv.status == "draft" %}{{ inv.balance|rupees }}{% else %}—{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="6" class="opacity-60">No invoices found.</td></tr>{% endfor %}
     </tbody>
   </table>
 </div>
+{% if page.paginator.num_pages > 1 %}
+<div class="join mt-4">
+  {% if page.has_previous %}<a class="join-item btn btn-sm" href="?{{ querystring }}&page={{ page.previous_page_number }}">«</a>{% endif %}
+  <span class="join-item btn btn-sm btn-disabled">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a class="join-item btn btn-sm" href="?{{ querystring }}&page={{ page.next_page_number }}">»</a>{% endif %}
+</div>
+{% endif %}
 {% endblock %}
