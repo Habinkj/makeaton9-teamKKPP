@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ cfg.title }} · Brightloop{% endblock %}
+{% block content %}
+{% include "catalog/_tabs.html" %}
+<div class="flex justify-between items-center mb-4">
+  <h1 class="text-2xl font-bold">{{ cfg.title }}</h1>
+  {% if can_edit %}<a class="btn btn-primary" href="{% url 'catalog_new' key=current %}">Add</a>{% endif %}
+</div>
+<div class="overflow-x-auto bg-base-100 shadow rounded-box">
+  <table class="table">
+    <thead><tr>{% for h in headers %}<th>{{ h }}</th>{% endfor %}<th></th></tr></thead>
+    <tbody>
+    {% for row in rows %}
+      <tr>{% for cell in row.cells %}<td>{{ cell }}</td>{% endfor %}
+        <td class="text-right">{% if can_edit %}<a class="link" href="{% url 'catalog_edit' key=current pk=row.pk %}">Edit</a>{% endif %}</td></tr>
+    {% empty %}
+      <tr><td colspan="{{ headers|length|add:1 }}" class="opacity-60">Nothing here yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

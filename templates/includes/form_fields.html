@@ -5,6 +5,7 @@
   <label class="form-control w-full mb-3">
     <div class="label"><span class="label-text">{{ field.label }}</span></div>
     {{ field }}
+    {% if field.help_text %}<div class="label"><span class="label-text-alt opacity-70">{{ field.help_text }}</span></div>{% endif %}
     {% for e in field.errors %}<div class="label"><span class="label-text-alt text-error">{{ e }}</span></div>{% endfor %}
   </label>
 {% endfor %}

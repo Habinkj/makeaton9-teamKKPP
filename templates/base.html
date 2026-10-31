@@ -15,12 +15,15 @@
     <div class="flex-none gap-2">
       {% if user.is_authenticated %}
         {% if user_role == "admin" %}
-          <a href="#" class="btn btn-ghost">Products</a>
-          <a href="#" class="btn btn-ghost">Discounts</a>
+          <a href="{% url 'catalog_list' key='products' %}" class="btn btn-ghost">Products</a>
+          <a href="{% url 'catalog_list' key='plans' %}" class="btn btn-ghost">Plans</a>
+          <a href="{% url 'catalog_list' key='taxes' %}" class="btn btn-ghost">Tax</a>
+          <a href="{% url 'catalog_list' key='discounts' %}" class="btn btn-ghost">Discounts</a>
           <a href="{% url 'staff_list' %}" class="btn btn-ghost">Staff</a>
           <a href="#" class="btn btn-ghost">Subscriptions</a>
           <a href="{% url 'invoice_list' %}" class="btn btn-ghost">Invoices</a>
         {% elif user_role == "staff" %}
+          <a href="{% url 'catalog_list' key='products' %}" class="btn btn-ghost">Catalog</a>
           <a href="#" class="btn btn-ghost">Subscriptions</a>
           <a href="{% url 'invoice_list' %}" class="btn btn-ghost">Invoices</a>
         {% else %}

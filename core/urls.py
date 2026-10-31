@@ -2,6 +2,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import path
 
 from core import views_auth as v
+from core import views_catalog as c
 from core.forms import EmailAuthenticationForm
 
 urlpatterns = [
@@ -22,6 +23,10 @@ urlpatterns = [
 
     path("staff/", v.staff_list, name="staff_list"),
     path("staff/new/", v.staff_create, name="staff_create"),
+
+    path("catalog/<slug:key>/", c.catalog_list, name="catalog_list"),
+    path("catalog/<slug:key>/new/", c.catalog_edit, name="catalog_new"),
+    path("catalog/<slug:key>/<int:pk>/", c.catalog_edit, name="catalog_edit"),
 
     path("invoices/", v.invoice_list, name="invoice_list"),
     path("invoices/<int:pk>/", v.invoice_detail, name="invoice_detail"),

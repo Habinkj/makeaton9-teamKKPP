@@ -1,15 +1,7 @@
 from django import template
 
+from core.formatting import format_bps, format_rupees
+
 register = template.Library()
-
-
-@register.filter
-def rupees(paise):
-    """Integer paise -> '₹1,234.56'. Display only; never used for arithmetic."""
-    try:
-        paise = int(paise)
-    except (TypeError, ValueError):
-        return ""
-    sign = "-" if paise < 0 else ""
-    rupees_part, p = divmod(abs(paise), 100)
-    return f"{sign}₹{rupees_part:,}.{p:02d}"
+register.filter("rupees", format_rupees)
+register.filter("bps", format_bps)

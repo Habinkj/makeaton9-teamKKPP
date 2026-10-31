@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ cfg.title }} · Brightloop{% endblock %}
+{% block content %}
+{% include "catalog/_tabs.html" %}
+<div class="card bg-base-100 shadow max-w-xl mx-auto"><div class="card-body">
+  <h1 class="card-title">{% if obj %}Edit{% else %}New{% endif %} · {{ cfg.title }}</h1>
+  <form method="post">{% csrf_token %}
+    {% include "includes/form_fields.html" %}
+    <div class="flex gap-2">
+      <button class="btn btn-primary" type="submit">Save</button>
+      <a class="btn btn-ghost" href="{% url 'catalog_list' key=current %}">Cancel</a>
+    </div>
+  </form>
+</div></div>
+{% endblock %}
